@@ -1,0 +1,29 @@
+{
+  "name": "electron-recorder",
+  "version": "0.0.0-alpha",
+  "description": "a simple screen recorder for electron, be used to cupture video for screen/window and audio for desktop/mic, support win/mac",
+  "main": "index.js",
+  "scripts": {
+    "autoFix": "eslint --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youngerheart/electron-recorder.git"
+  },
+  "author": "youngerheart",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/youngerheart/electron-recorder/issues"
+  },
+  "homepage": "https://github.com/youngerheart/electron-recorder#readme",
+  "devDependencies": {
+    "eslint": "^6.7.2"
+  },
+  "lint-staged": {
+    "src/**/*.{js,vue}": [
+      "npm run autoFix -c --config .eslintrc.js",
+      "npm run lint",
+      "git add"
+    ]
+  }
+}
