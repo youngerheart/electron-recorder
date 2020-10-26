@@ -1,16 +1,3 @@
-import { desktopCapturer } from 'electron'
-export function isMac () {
-  return os.type().toLowerCase().indexOf('darwin') !== -1;
-}
-
-// 获取屏幕权限
-export function getWindowAccess () {
-  return desktopCapturer.getSources({
-    types: ['screen', 'window']
-  });
-}
-
-let desktopConfig;
 let stream = null;
 let audioCtx = new AudioContext();
 let recorder = null;
@@ -33,17 +20,21 @@ export function startRecord () {
   };
   console.log('startRecord');
   recorder.start();
-  setTimeout(endRecord, 5000);
 }
 export function endRecord () {
   console.log('endRecord');
   recorder.stop();
+  stream.getTracks().forEach(track => track.stop())
 }
 
-export function getWindow (name) {
+export function getWindow (electron, name = 'Electron') {
+  if (!electron) throw new Error('electron was required in first param')
+  let { desktopCapturer } = electron
   return new Promise((resolve) => {
     let devicePromise = null;
-    if (isMac) {
+    let desktopConfig;
+    /*eslint-disable*/
+    if (navigator.userAgent.indexOf('Mac') !== -1) {
       devicePromise = navigator.mediaDevices.enumerateDevices().then((devices) => {
         let device = devices.filter((device) => device.kind === 'audiooutput' && device.label === 'Soundflower (2ch)' && device.deviceId != 'default')[0];
         desktopConfig = {
@@ -52,6 +43,7 @@ export function getWindow (name) {
           }
         };
       });
+      console.error(desktopConfig)
     } else {
       desktopConfig = {
         audio: {
@@ -67,7 +59,10 @@ export function getWindow (name) {
       };
     }
     Promise.resolve(devicePromise).then(() => {
-      return getWindowAccess();
+      // 获取屏幕权限
+      return desktopCapturer.getSources({
+        types: ['screen', 'window']
+      });
     }).then((sources) => {
       // 做筛选
       let selectSource = sources.filter((source) => source.name === name)[0];
@@ -86,19 +81,18 @@ export function getWindow (name) {
           }
         }
       });
-      console.error(desktopConfig);
       let desktopAudio = navigator.mediaDevices.getUserMedia(desktopConfig);
       let micAudio = navigator.mediaDevices.getUserMedia({
         audio: true,
         video: false
       });
-      return Promise.all([windowVideo, desktopAudio, micAudio]);
-    }).then(([windowStream, desktopStream, micStream]) => {
-      let desktopSource = audioCtx.createMediaStreamSource(desktopStream);
-      let micSource = audioCtx.createMediaStreamSource(micStream);
+      return Promise.allSettled([windowVideo, desktopAudio, micAudio]);
+    }).then(([{ value: windowStream }, {value: desktopStream }, { value: micStream }]) => {
+      let desktopSource = desktopStream && audioCtx.createMediaStreamSource(desktopStream);
+      let micSource = micStream && audioCtx.createMediaStreamSource(micStream);
       let destination = audioCtx.createMediaStreamDestination();
-      desktopSource.connect(destination);
-      micSource.connect(destination);
+      if (desktopSource) desktopSource.connect(destination);
+      if (micSource) micSource.connect(destination);
       windowStream.addTrack(...destination.stream.getAudioTracks());
       stream = windowStream;
       // console.log(stream);
