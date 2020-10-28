@@ -1,7 +1,7 @@
 let stream = null;
 let audioCtx = new AudioContext();
 let recorder = null;
-let chunk = null;
+let urlResolve
 let download = document.createElement('a');
 
 function handleError (e) {
@@ -13,10 +13,13 @@ export function startRecord () {
   recorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9', audio: true});
   recorder.ondataavailable = (e) => {
     console.log('ondataavailable', e.data);
-    chunk = e.data;
-    download.href = URL.createObjectURL(chunk);
-    download.setAttribute('download', 'a.webm');
-    download.click();
+    let url = URL.createObjectURL(e.data)
+    if (urlResolve) urlResolve(url)
+    else {
+      download.href = url;
+      download.setAttribute('download', 'a.webm');
+      download.click();
+    }
   };
   console.log('startRecord');
   recorder.start();
@@ -25,6 +28,9 @@ export function endRecord () {
   console.log('endRecord');
   recorder.stop();
   stream.getTracks().forEach(track => track.stop())
+  return new Promise((resolve) => {
+    urlResolve = resolve
+  })
 }
 
 export function getWindow (electron, name = 'Electron') {
