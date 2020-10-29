@@ -49,7 +49,6 @@ export function getWindow (electron, name = 'Electron') {
           }
         };
       });
-      console.error(desktopConfig)
     } else {
       desktopConfig = {
         audio: {
