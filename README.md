@@ -5,3 +5,57 @@
 <div>
 <img src="https://raw.githubusercontent.com/youngerheart/electron-recorder/master/recorder.png" title="electron-recorder" width="160px">
 </div>
+
+## usage
+```js
+// install
+npm i @youngerheart/electron-recorder -S
+
+import { getWindow, startRecord, endRecord } from '@youngerheart/electron-recorder'
+
+/**
+ * initialize the MediaStream object with
+ * an application window's video track
+ * a audio track from merged desktop audio track and mic audio track
+ * @params {Object} electron: the module object of electron
+ * @params {String} name: the name of the window, default value is 'Electron'
+ * @return {Object} promise: the promise object for result
+ * @thenParams {Boolean} mic: existing mic audio track
+ * @thenParams {Boolean} desktop: existing desktop audio track
+ * @catchParams {Object} error: catched Error object
+ */
+let promise = getWindow(electron, 'yourWindowName').then(({ mic, desktop }) => {
+  if (!mic) console.log('mic audio track was blocked, please check your devices')
+  if (!desktop) console.log('desktop audio track was blocked, please check your devices')
+}).catch(error => console.log(error))
+
+/**
+ * need to be call after getWindow finished
+ * start record the media (webm formatted)
+ */
+promise.then(() => {
+  startRecord()
+})
+/**
+ * need to be call after record started
+ * @return {Object} promise: the promise object for result
+ * @thenParams {string} url: the blob file's object url
+ */
+endRecord().then((url) => {
+  ipcRenderer.send('download', url)
+})
+
+// main process
+ipcMain.on('download', (target, url) => {
+  targetWin.webContents.downloadURL(url) // start download...
+})
+```
+
+## develop
+
+```
+git clone
+npm i
+npm run dev
+```
+and require the js file at http://localhost:8080/index.js
