@@ -1,20 +1,15 @@
-let stream = null;
+let currentStream = null;
 let audioCtx = new AudioContext();
 let recorder = null;
-let urlResolve
+let urlResolve;
 let download = document.createElement('a');
 
-function handleError (e) {
-  console.error(e);
-  // exit
-}
-
 export function startRecord () {
-  recorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9', audio: true});
+  recorder = new MediaRecorder(currentStream, { mimeType: 'video/webm; codecs=vp9', audio: true});
   recorder.ondataavailable = (e) => {
     console.log('ondataavailable', e.data);
-    let url = URL.createObjectURL(e.data)
-    if (urlResolve) urlResolve(url)
+    let url = URL.createObjectURL(e.data);
+    if (urlResolve) urlResolve(url);
     else {
       download.href = url;
       download.setAttribute('download', 'a.webm');
@@ -27,18 +22,19 @@ export function startRecord () {
 export function endRecord () {
   console.log('endRecord');
   recorder.stop();
-  stream.getTracks().forEach(track => track.stop())
+  currentStream.getTracks().forEach((track) => track.stop());
   return new Promise((resolve) => {
-    urlResolve = resolve
-  })
+    urlResolve = resolve;
+  });
 }
 
 export function getWindow (electron, name = 'Electron') {
-  if (!electron) throw new Error('electron was required in first param')
-  let { desktopCapturer } = electron
+  if (!electron) throw new Error('electron was required in first param');
+  let { desktopCapturer } = electron;
   return new Promise((resolve) => {
     let devicePromise = null;
     let desktopConfig;
+    let currentError;
     /*eslint-disable*/
     if (navigator.userAgent.indexOf('Mac') !== -1) {
       devicePromise = navigator.mediaDevices.enumerateDevices().then((devices) => {
@@ -92,16 +88,15 @@ export function getWindow (electron, name = 'Electron') {
         video: false
       });
       return Promise.allSettled([windowVideo, desktopAudio, micAudio]);
-    }).then(([{ value: windowStream }, {value: desktopStream }, { value: micStream }]) => {
+    }).then(([{ value: windowStream }, {　value: desktopStream }, { value: micStream }]) => {
       let desktopSource = desktopStream && audioCtx.createMediaStreamSource(desktopStream);
       let micSource = micStream && audioCtx.createMediaStreamSource(micStream);
       let destination = audioCtx.createMediaStreamDestination();
       if (desktopSource) desktopSource.connect(destination);
       if (micSource) micSource.connect(destination);
       windowStream.addTrack(...destination.stream.getAudioTracks());
-      stream = windowStream;
-      // console.log(stream);
-      resolve();
-    }).catch(handleError);
+      currentStream = windowStream;
+      resolve(currentError);
+    }).catch(err => currentError = err);
   });
 }
