@@ -31,19 +31,20 @@ export function endRecord () {
 export function getWindow (electron, name = 'Electron') {
   if (!electron) throw new Error('electron was required in first param');
   let { desktopCapturer } = electron;
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let devicePromise = null;
     let desktopConfig;
-    let currentError;
     /*eslint-disable*/
     if (navigator.userAgent.indexOf('Mac') !== -1) {
       devicePromise = navigator.mediaDevices.enumerateDevices().then((devices) => {
         let device = devices.filter((device) => device.kind === 'audiooutput' && device.label === 'Soundflower (2ch)' && device.deviceId != 'default')[0];
-        desktopConfig = {
-          audio: {
-            deviceId: device && device.deviceId
-          }
-        };
+        if (device) {
+          desktopConfig = {
+            audio: {
+              deviceId: device.deviceId
+            }
+          };
+        }
       });
     } else {
       desktopConfig = {
@@ -82,7 +83,7 @@ export function getWindow (electron, name = 'Electron') {
           }
         }
       });
-      let desktopAudio = navigator.mediaDevices.getUserMedia(desktopConfig);
+      let desktopAudio = desktopConfig ? navigator.mediaDevices.getUserMedia(desktopConfig) : Promise.resolve(false);
       let micAudio = navigator.mediaDevices.getUserMedia({
         audio: true,
         video: false
@@ -96,7 +97,10 @@ export function getWindow (electron, name = 'Electron') {
       if (micSource) micSource.connect(destination);
       windowStream.addTrack(...destination.stream.getAudioTracks());
       currentStream = windowStream;
-      resolve(currentError);
-    }).catch(err => currentError = err);
+      resolve({
+        mic: !!micSource,
+        desktop: !!desktopSource
+      });
+    }).catch(reject);
   });
 }

@@ -1,12 +1,13 @@
 {
   "name": "@youngerheart/electron-recorder",
-  "version": "0.0.0-beta.7",
+  "version": "0.0.0-beta.9",
   "description": "a simple screen recorder for electron, be used to cupture video for screen/window and audio for desktop/mic, support win/mac",
   "main": "dist/index.js",
   "scripts": {
     "dev": "webpack-dev-server --hot --inline",
     "build": "webpack --mode=production --progress",
-    "autoFix": "eslint --fix"
+    "autoFix": "eslint --fix",
+    "deploy": "npm run build && npm publish"
   },
   "files": [
     "src/*",
