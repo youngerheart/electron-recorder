@@ -1,6 +1,6 @@
 {
   "name": "@youngerheart/electron-recorder",
-  "version": "0.0.0-beta.10",
+  "version": "0.0.0-beta.12",
   "description": "a simple screen recorder for electron, be used to cupture video for screen/window and audio for desktop/mic, support win/mac",
   "main": "dist/index.js",
   "scripts": {

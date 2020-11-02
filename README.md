@@ -32,18 +32,17 @@ let promise = getWindow(electron, 'yourWindowName').then(({ mic, desktop }) => {
 /**
  * need to be call after getWindow finished
  * start record the media (webm formatted)
+ * @params {Object} callback: return the blob file's object url
+ * @params {Number} timeout: handle the file url per millisecond(default is 10000ms)
  */
-promise.then(() => {
-  startRecord()
-})
+startRecord((url) => {
+  ipcRenderer.send('download', url)
+}, timeout);
+
 /**
  * need to be call after record started
- * @return {Object} promise: the promise object for result
- * @thenParams {string} url: the blob file's object url
  */
-endRecord().then((url) => {
-  ipcRenderer.send('download', url)
-})
+endRecord()
 
 // main process
 ipcMain.on('download', (target, url) => {
