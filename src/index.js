@@ -65,7 +65,7 @@ export function getWindow (electron, name = 'Electron') {
     }).then((sources) => {
       // 做筛选
       let selectSource = sources.filter((source) => source.name === name)[0];
-      if (!selectSource) return [];
+      // if (!selectSource) return [];
       // 同时捕获画面/系统内部声音/麦克风
       let windowVideo = navigator.mediaDevices.getUserMedia({
         audio: false,
