@@ -18,7 +18,7 @@ import { getWindow, startRecord, endRecord } from '@youngerheart/electron-record
  * an application window's video track
  * a audio track from merged desktop audio track and mic audio track
  * @params {Object} electron: the module object of electron
- * @params {String} name: the name of the window, default value is 'Electron'
+ * @params {String} name: the name of the window, capture main desktop while param undefined
  * @return {Object} promise: the promise object for result
  * @thenParams {Boolean} mic: existing mic audio track
  * @thenParams {Boolean} desktop: existing desktop audio track

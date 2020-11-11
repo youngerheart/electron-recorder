@@ -25,7 +25,7 @@ export function endRecord () {
   currentStream.getTracks().forEach((track) => track.stop());
 }
 
-export function getWindow (electron, name = 'Electron') {
+export function getWindow (electron, name) {
   if (!electron) throw new Error('electron was required in first param');
   let { desktopCapturer } = electron;
   return new Promise((resolve, reject) => {
